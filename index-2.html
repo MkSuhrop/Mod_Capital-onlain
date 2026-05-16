@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mod_Capital — Онлайн Академия</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --accent: #c9a84c;
+    --accent2: #e8c97a;
+    --text: #f0f0f0;
+    --text2: #888888;
+    --text3: #555555;
+    --danger: #e05555;
+    --success: #4caf7d;
+    --radius: 12px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
+
+  /* ── AUTH ── */
+  #auth-screen {
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+    background: radial-gradient(ellipse at 60% 40%, #1a1400 0%, #0a0a0a 70%);
+  }
+  .auth-box {
+    width:400px; padding:48px 40px; background:var(--surface);
+    border:1px solid var(--border); border-radius:20px;
+    box-shadow: 0 0 80px #c9a84c18;
+  }
+  .logo { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; letter-spacing:-1px; margin-bottom:8px; }
+  .logo span { color:var(--accent); }
+  .auth-sub { color:var(--text2); font-size:13px; margin-bottom:36px; }
+  .auth-tabs { display:flex; gap:4px; background:var(--surface2); border-radius:8px; padding:4px; margin-bottom:28px; }
+  .auth-tab { flex:1; padding:9px; text-align:center; border-radius:6px; cursor:pointer; font-size:13px; color:var(--text2); transition:.2s; }
+  .auth-tab.active { background:var(--accent); color:#000; font-weight:600; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12px; color:var(--text2); margin-bottom:6px; letter-spacing:.5px; text-transform:uppercase; }
+  .field input { width:100%; padding:12px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:14px; outline:none; transition:.2s; }
+  .field input:focus { border-color:var(--accent); }
+  .btn-primary { width:100%; padding:13px; background:var(--accent); color:#000; font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; transition:.15s; font-family:'Syne',sans-serif; letter-spacing:.5px; }
+  .btn-primary:hover { background:var(--accent2); }
+  .auth-err { color:var(--danger); font-size:12px; margin-top:10px; text-align:center; min-height:18px; }
+
+  /* ── ADMIN PANEL ── */
+  #admin-screen { display:none; min-height:100vh; }
+  .admin-layout { display:flex; }
+  .sidebar {
+    width:240px; min-height:100vh; background:var(--surface);
+    border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0;
+    display:flex; flex-direction:column;
+  }
+  .sidebar-logo { padding:0 24px 24px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+  .sidebar-logo .logo { font-size:20px; }
+  .sidebar-role { font-size:10px; color:var(--accent); letter-spacing:1px; text-transform:uppercase; margin-top:2px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:11px 24px; cursor:pointer; font-size:13px; color:var(--text2); transition:.15s; border-left:2px solid transparent; }
+  .nav-item:hover { color:var(--text); background:var(--surface2); }
+  .nav-item.active { color:var(--accent); border-left-color:var(--accent); background:var(--surface2); }
+  .nav-icon { font-size:16px; width:20px; text-align:center; }
+  .sidebar-bottom { margin-top:auto; padding:16px 24px; border-top:1px solid var(--border); }
+  .user-badge { font-size:12px; color:var(--text2); margin-bottom:10px; }
+  .btn-logout { width:100%; padding:9px; background:transparent; border:1px solid var(--border); color:var(--text2); border-radius:8px; cursor:pointer; font-size:12px; transition:.15s; }
+  .btn-logout:hover { border-color:var(--danger); color:var(--danger); }
+
+  .main-content { flex:1; padding:40px; }
+  .page { display:none; }
+  .page.active { display:block; }
+  .page-title { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; margin-bottom:6px; }
+  .page-sub { color:var(--text2); font-size:13px; margin-bottom:32px; }
+
+  /* Cards */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+  .section-title { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+
+  /* Allowed Emails */
+  .email-list { display:flex; flex-direction:column; gap:8px; margin-bottom:16px; max-height:280px; overflow-y:auto; }
+  .email-item { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:var(--surface2); border-radius:8px; font-size:13px; }
+  .email-item .del-btn { background:none; border:none; color:var(--text3); cursor:pointer; font-size:16px; transition:.15s; }
+  .email-item .del-btn:hover { color:var(--danger); }
+  .add-email-row { display:flex; gap:8px; }
+  .add-email-row input { flex:1; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; outline:none; }
+  .add-email-row input:focus { border-color:var(--accent); }
+  .btn-add { padding:10px 18px; background:var(--accent); color:#000; font-weight:700; font-size:13px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; }
+
+  /* Modules Grid */
+  .modules-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:24px; }
+  .module-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; cursor:pointer; transition:.2s; }
+  .module-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .module-num { font-size:11px; color:var(--accent); font-weight:600; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
+  .module-name { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; margin-bottom:10px; }
+  .module-meta { font-size:12px; color:var(--text2); }
+  .btn-secondary { padding:10px 18px; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-size:13px; border-radius:8px; cursor:pointer; transition:.15s; }
+  .btn-secondary:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:#000a; z-index:100; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; width:520px; max-height:80vh; overflow-y:auto; position:relative; }
+  .modal h3 { font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:20px; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--text2); font-size:20px; cursor:pointer; }
+  .modal-close:hover { color:var(--text); }
+  .form-row { margin-bottom:14px; }
+  .form-row label { display:block; font-size:11px; color:var(--text2); margin-bottom:5px; text-transform:uppercase; letter-spacing:.5px; }
+  .form-row input, .form-row textarea { width:100%; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; color:var(--text); font-size:13px; outline:none; resize:vertical; }
+  .form-row input:focus, .form-row textarea:focus { border-color:var(--accent); }
+  .modal-actions { display:flex; gap:8px; margin-top:20px; justify-content:flex-end; }
+
+  /* Lessons list in module detail */
+  .lesson-list { display:flex; flex-direction:column; gap:8px; }
+  .lesson-item { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--surface2); border-radius:8px; cursor:pointer; transition:.15s; }
+  .lesson-item:hover { background:#222; }
+  .lesson-num { width:28px; height:28px; border-radius:50%; background:var(--surface); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--accent); font-weight:700; flex-shrink:0; }
+  .lesson-info { flex:1; }
+  .lesson-title { font-size:13px; font-weight:500; margin-bottom:2px; }
+  .lesson-icons { font-size:11px; color:var(--text2); }
+  .lesson-actions { display:flex; gap:6px; }
+  .btn-sm { padding:5px 10px; font-size:11px; border-radius:6px; cursor:pointer; border:1px solid var(--border); background:var(--surface); color:var(--text2); transition:.15s; }
+  .btn-sm:hover { border-color:var(--accent); color:var(--accent); }
+  .btn-sm.danger:hover { border-color:var(--danger); color:var(--danger); }
+
+  /* Stats */
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .stat-val { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--accent); }
+  .stat-label { font-size:12px; color:var(--text2); margin-top:4px; }
+
+  /* ── STUDENT PANEL ── */
+  #student-screen { display:none; min-height:100vh; }
+  .student-layout { display:flex; }
+  .student-sidebar { width:280px; min-height:100vh; background:var(--surface); border-right:1px solid var(--border); padding:0; position:sticky; top:0; overflow-y:auto; }
+  .stu-header { padding:24px; border-bottom:1px solid var(--border); }
+  .stu-logo { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; }
+  .stu-logo span { color:var(--accent); }
+  .stu-user { font-size:12px; color:var(--text2); margin-top:4px; }
+  .module-nav { padding:16px 0; }
+  .module-nav-item { padding:0; }
+  .module-nav-title { padding:10px 24px; font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:.15s; }
+  .module-nav-title:hover { color:var(--text2); }
+  .module-nav-title.expanded { color:var(--accent); }
+  .lesson-nav-list { display:none; padding:4px 0; }
+  .lesson-nav-list.open { display:block; }
+  .lesson-nav-item { padding:8px 24px 8px 36px; font-size:12px; color:var(--text2); cursor:pointer; display:flex; align-items:center; gap:8px; transition:.15s; }
+  .lesson-nav-item:hover { color:var(--text); background:var(--surface2); }
+  .lesson-nav-item.active { color:var(--accent); }
+  .lesson-nav-item.done::before { content:'✓'; color:var(--success); font-size:10px; }
+  .lesson-nav-item:not(.done)::before { content:'○'; color:var(--text3); font-size:10px; }
+  .lesson-nav-item.locked { color:var(--text3); cursor:not-allowed; }
+  .lesson-nav-item.locked::before { content:'🔒'; font-size:9px; }
+
+  .student-main { flex:1; padding:40px; max-width:860px; }
+  .lesson-view { display:none; }
+  .lesson-view.active { display:block; }
+  .lesson-breadcrumb { font-size:12px; color:var(--text2); margin-bottom:8px; }
+  .lesson-heading { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; margin-bottom:24px; }
+
+  .lesson-section { margin-bottom:28px; }
+  .section-header { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .section-header::before { content:''; display:block; width:4px; height:16px; background:var(--accent); border-radius:2px; }
+
+  .pdf-placeholder, .video-placeholder { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px; text-align:center; color:var(--text2); }
+  .pdf-placeholder .icon, .video-placeholder .icon { font-size:40px; margin-bottom:10px; }
+  .pdf-placeholder p, .video-placeholder p { font-size:13px; }
+  .pdf-embed { width:100%; height:500px; border-radius:var(--radius); border:none; }
+  .video-embed { width:100%; aspect-ratio:16/9; border-radius:var(--radius); border:none; }
+
+  /* Quiz */
+  .quiz-container { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:24px; }
+  .quiz-progress { font-size:12px; color:var(--text2); margin-bottom:20px; }
+  .quiz-q-text { font-size:15px; font-weight:500; margin-bottom:16px; line-height:1.5; }
+  .quiz-options { display:flex; flex-direction:column; gap:8px; }
+  .quiz-option { padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; cursor:pointer; font-size:13px; transition:.15s; text-align:left; color:var(--text); }
+  .quiz-option:hover { border-color:var(--accent); }
+  .quiz-option.correct { background:#0d2b1a; border-color:var(--success); color:var(--success); }
+  .quiz-option.wrong { background:#2b0d0d; border-color:var(--danger); color:var(--danger); }
+  .quiz-option.disabled { cursor:not-allowed; }
+  .quiz-result { text-align:center; padding:20px; }
+  .quiz-score { font-family:'Syne',sans-serif; font-size:48px; font-weight:800; color:var(--accent); }
+  .quiz-result p { color:var(--text2); font-size:13px; margin-top:8px; }
+
+  .btn-next-lesson { margin-top:20px; padding:12px 24px; background:var(--accent); color:#000; font-weight:700; font-size:13px; border:none; border-radius:8px; cursor:pointer; display:none; }
+  .btn-next-lesson.visible { display:inline-block; }
+
+  /* Dashboard welcome */
+  .welcome-screen { display:block; }
+  .welcome-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:40px; margin-bottom:24px; background: linear-gradient(135deg, var(--surface) 60%, #1a1200); }
+  .welcome-card h2 { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; margin-bottom:8px; }
+  .welcome-card p { color:var(--text2); font-size:14px; }
+  .progress-modules { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; margin-top:24px; }
+  .prog-card { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:16px; cursor:pointer; transition:.15s; }
+  .prog-card:hover { border-color:var(--accent); }
+  .prog-card-title { font-size:13px; font-weight:600; margin-bottom:10px; }
+  .prog-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; }
+  .prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:.4s; }
+  .prog-pct { font-size:11px; color:var(--text2); margin-top:6px; }
+
+  /* Responsive helpers */
+  .flex { display:flex; align-items:center; gap:12px; }
+  .mt-16 { margin-top:16px; }
+  .mt-24 { margin-top:24px; }
+  .tag { display:inline-block; padding:3px 8px; background:var(--surface2); border:1px solid var(--border); border-radius:4px; font-size:11px; color:var(--text2); }
+  .tag.gold { border-color:var(--accent); color:var(--accent); background:#1a1200; }
+
+  /* Users table */
+  .table { width:100%; border-collapse:collapse; font-size:13px; }
+  .table th { text-align:left; padding:10px 14px; background:var(--surface2); color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+  .table td { padding:10px 14px; border-top:1px solid var(--border); }
+  .table tr:hover td { background:var(--surface2); }
+
+  ::-webkit-scrollbar { width:5px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ AUTH ══════════════ -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="logo">Mod<span>_Capital</span></div>
+    <div class="auth-sub">Профессиональная трейдинг-академия</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchAuthTab('login')">Войти</div>
+      <div class="auth-tab" onclick="switchAuthTab('register')">Регистрация</div>
+    </div>
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com"></div>
+      <div class="field"><label>Пароль</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="btn-primary" onclick="doLogin()">Войти</button>
+    </div>
+    <!-- REGISTER -->
+    <div id="register-form" style="display:none">
+      <div class="field"><label>Имя</label><input type="text" id="reg-name" placeholder="Ваше имя"></div>
+      <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="you@email.com"></div>
+      <div class="field"><label>Пароль</label><input type="password" id="reg-pass" placeholder="Минимум 6 символов"></div>
+      <button class="btn-primary" onclick="doRegister()">Создать аккаунт</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ADMIN ══════════════ -->
+<div id="admin-screen">
+  <div class="admin-layout">
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo">Mod<span>_Capital</span></div>
+        <div class="sidebar-role">Администратор</div>
+      </div>
+      <div class="nav-item active" onclick="adminNav('dashboard')"><span class="nav-icon">📊</span> Дашборд</div>
+      <div class="nav-item" onclick="adminNav('modules')"><span class="nav-icon">📚</span> Модули</div>
+      <div class="nav-item" onclick="adminNav('access')"><span class="nav-icon">🔐</span> Доступ</div>
+      <div class="nav-item" onclick="adminNav('users')"><span class="nav-icon">👥</span> Пользователи</div>
+      <div class="sidebar-bottom">
+        <div class="user-badge" id="admin-badge"></div>
+        <button class="btn-logout" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+    <div class="main-content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="page-title">Обзор платформы</div>
+        <div class="page-sub">Статистика Mod_Capital</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-val" id="stat-users">0</div><div class="stat-label">Студентов</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-modules">0</div><div class="stat-label">Модулей</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-lessons">0</div><div class="stat-label">Уроков</div></div>
+          <div class="stat-card"><div class="stat-val" id="stat-allowed">0</div><div class="stat-label">Разрешённых email</div></div>
+        </div>
+        <div class="card">
+          <div class="section-title">Быстрые действия</div>
+          <div class="flex" style="flex-wrap:wrap;gap:10px;">
+            <button class="btn-secondary" onclick="adminNav('modules')">➕ Добавить модуль</button>
+            <button class="btn-secondary" onclick="adminNav('access')">✉️ Добавить email</button>
+            <button class="btn-secondary" onclick="adminNav('users')">👥 Просмотр студентов</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULES -->
+      <div class="page" id="page-modules">
+        <div class="page-title">Модули</div>
+        <div class="page-sub">Управление учебными модулями и уроками</div>
+        <div class="modules-grid" id="admin-modules-grid"></div>
+        <button class="btn-secondary" onclick="openAddModule()">➕ Новый модуль</button>
+      </div>
+
+      <!-- ACCESS -->
+      <div class="page" id="page-access">
+        <div class="page-title">Управление доступом</div>
+        <div class="page-sub">Только разрешённые email могут зарегистрироваться</div>
+        <div class="card">
+          <div class="section-title">Разрешённые email</div>
+          <div class="email-list" id="email-list"></div>
+          <div class="add-email-row">
+            <input type="email" id="new-email-input" placeholder="example@gmail.com">
+            <button class="btn-add" onclick="addAllowedEmail()">Добавить</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="page-title">Пользователи</div>
+        <div class="page-sub">Зарегистрированные студенты</div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>Имя</th><th>Email</th><th>Устройство</th><th>Прогресс</th><th>Действие</th></tr></thead>
+            <tbody id="users-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODULE DETAIL MODAL ══════════════ -->
+<div class="modal-overlay" id="module-detail-modal">
+  <div class="modal" style="width:620px">
+    <button class="modal-close" onclick="closeModal('module-detail-modal')">✕</button>
+    <h3 id="mdm-title">Модуль</h3>
+    <div class="flex mt-16" style="margin-bottom:20px;">
+      <button class="btn-secondary" onclick="openAddLesson()">➕ Добавить урок</button>
+    </div>
+    <div class="lesson-list" id="mdm-lesson-list"></div>
+  </div>
+</div>
+
+<!-- ADD MODULE MODAL -->
+<div class="modal-overlay" id="add-module-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-module-modal')">✕</button>
+    <h3>Новый модуль</h3>
+    <div class="form-row"><label>Название модуля</label><input type="text" id="new-module-name" placeholder="Например: Основы технического анализа"></div>
+    <div class="form-row"><label>Описание</label><textarea id="new-module-desc" rows="3" placeholder="Краткое описание модуля"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('add-module-modal')">Отмена</button>
+      <button class="btn-primary" onclick="saveModule()" style="width:auto;padding:10px 24px;">Создать</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD LESSON MODAL -->
+<div class="modal-overlay" id="add-lesson-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-lesson-modal')">✕</button>
+    <h3>Добавить урок</h3>
+    <div class="form-row"><label>Название урока</label><input type="text" id="new-lesson-name" placeholder="Название урока"></div>
+    <div class="form-row"><label>PDF — ссылка на Google Drive (embed)</label><input type="text" id="new-lesson-pdf" placeholder="https://drive.google.com/file/d/.../preview"></div>
+    <div class="form-row"><label>Видео — ссылка YouTube (embed)</label><input type="text" id="new-lesson-video" placeholder="https://www.youtube.com/embed/..."></div>
+    <div class="form-row"><label>Тест — вопросы (JSON формат)</label>
+      <textarea id="new-lesson-quiz" rows="6" placeholder='[{"q":"Вопрос?","opts":["A","B","C","D"],"ans":0}]'></textarea>
+    </div>
+    <div style="font-size:11px;color:var(--text2);margin-top:-8px;margin-bottom:12px;">
+      ans: индекс правильного ответа (0,1,2,3). Добавьте 10 вопросов.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('add-lesson-modal')">Отмена</button>
+      <button class="btn-primary" onclick="saveLesson()" style="width:auto;padding:10px 24px;">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT LESSON MODAL -->
+<div class="modal-overlay" id="edit-lesson-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('edit-lesson-modal')">✕</button>
+    <h3>Редактировать урок</h3>
+    <input type="hidden" id="edit-lesson-idx">
+    <div class="form-row"><label>Название урока</label><input type="text" id="edit-lesson-name"></div>
+    <div class="form-row"><label>PDF embed ссылка</label><input type="text" id="edit-lesson-pdf"></div>
+    <div class="form-row"><label>Видео embed ссылка</label><input type="text" id="edit-lesson-video"></div>
+    <div class="form-row"><label>Тест JSON</label><textarea id="edit-lesson-quiz" rows="6"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('edit-lesson-modal')">Отмена</button>
+      <button class="btn-primary" onclick="updateLesson()" style="width:auto;padding:10px 24px;">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ STUDENT ══════════════ -->
+<div id="student-screen">
+  <div class="student-layout">
+    <div class="student-sidebar">
+      <div class="stu-header">
+        <div class="stu-logo">Mod<span>_Capital</span></div>
+        <div class="stu-user" id="stu-user-label"></div>
+      </div>
+      <div class="module-nav" id="student-module-nav"></div>
+      <div style="padding:16px 24px;margin-top:auto;border-top:1px solid var(--border);">
+        <button class="btn-logout" onclick="doLogout()">Выйти</button>
+      </div>
+    </div>
+    <div class="student-main">
+      <!-- Welcome -->
+      <div class="welcome-screen" id="student-welcome">
+        <div class="welcome-card">
+          <h2>Добро пожаловать! 👋</h2>
+          <p>Выберите модуль и начните обучение</p>
+          <div class="progress-modules" id="welcome-modules"></div>
+        </div>
+      </div>
+      <!-- Lesson View -->
+      <div class="lesson-view" id="lesson-view">
+        <div class="lesson-breadcrumb" id="lesson-breadcrumb"></div>
+        <div class="lesson-heading" id="lesson-heading"></div>
+
+        <div class="lesson-section">
+          <div class="section-header">📄 PDF Материал</div>
+          <div id="lesson-pdf-area"></div>
+        </div>
+
+        <div class="lesson-section">
+          <div class="section-header">🎬 Видео урок</div>
+          <div id="lesson-video-area"></div>
+        </div>
+
+        <div class="lesson-section">
+          <div class="section-header">📝 Тест</div>
+          <div class="quiz-container" id="quiz-container"></div>
+        </div>
+
+        <button class="btn-next-lesson" id="btn-next-lesson" onclick="goNextLesson()">Следующий урок →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+//  DATA LAYER (localStorage)
+// ════════════════════════════════
+const DB = {
+  get: k => { try { return JSON.parse(localStorage.getItem('mc_'+k)) } catch { return null } },
+  set: (k,v) => localStorage.setItem('mc_'+k, JSON.stringify(v)),
+};
+
+function initData() {
+  if (!DB.get('users'))    DB.set('users', []);
+  if (!DB.get('allowed'))  DB.set('allowed', ['admin@modcapital.com']);
+  if (!DB.get('modules'))  DB.set('modules', []);
+  if (!DB.get('progress')) DB.set('progress', {});
+  if (!DB.get('devices'))  DB.set('devices', {});
+
+  // Ensure admin account exists
+  let users = DB.get('users');
+  if (!users.find(u => u.email === 'admin@modcapital.com')) {
+    users.push({ name:'Admin', email:'admin@modcapital.com', pass:'admin123', role:'admin' });
+    DB.set('users', users);
+  }
+}
+
+// ════════════════════════════════
+//  AUTH
+// ════════════════════════════════
+let currentUser = null;
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i) => t.classList.toggle('active', (i===0&&tab==='login')||(i===1&&tab==='register')));
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('auth-err').textContent = '';
+}
+
+function setErr(msg) { document.getElementById('auth-err').textContent = msg; }
+
+function getDeviceId() {
+  let d = localStorage.getItem('mc_devid');
+  if (!d) { d = Math.random().toString(36).substr(2,12); localStorage.setItem('mc_devid', d); }
+  return d;
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('login-pass').value;
+  if (!email||!pass) { setErr('Заполните все поля'); return; }
+  const users = DB.get('users');
+  const u = users.find(x => x.email===email && x.pass===pass);
+  if (!u) { setErr('Неверный email или пароль'); return; }
+
+  // Device check (not for admin)
+  if (u.role !== 'admin') {
+    const devId = getDeviceId();
+    const devices = DB.get('devices');
+    if (devices[email] && devices[email] !== devId) {
+      setErr('Этот аккаунт уже используется на другом устройстве'); return;
+    }
+    devices[email] = devId;
+    DB.set('devices', devices);
+  }
+
+  currentUser = u;
+  showScreen(u.role==='admin' ? 'admin' : 'student');
+}
+
+function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('reg-pass').value;
+  if (!name||!email||!pass) { setErr('Заполните все поля'); return; }
+  if (pass.length < 6) { setErr('Пароль минимум 6 символов'); return; }
+
+  let users = DB.get('users');
+  if (users.find(u=>u.email===email)) { setErr('Email уже зарегистрирован'); return; }
+
+  const devId = getDeviceId();
+  const devices = DB.get('devices');
+  devices[email] = devId;
+  DB.set('devices', devices);
+
+  users.push({ name, email, pass, role:'student' });
+  DB.set('users', users);
+  setErr('');
+
+  // Auto login
+  currentUser = users[users.length-1];
+  showScreen('student');
+}
+
+function doLogout() {
+  currentUser = null;
+  showScreen('auth');
+}
+
+function showScreen(s) {
+  document.getElementById('auth-screen').style.display    = s==='auth'    ? 'flex'  : 'none';
+  document.getElementById('admin-screen').style.display   = s==='admin'   ? 'block' : 'none';
+  document.getElementById('student-screen').style.display = s==='student' ? 'block' : 'none';
+
+  if (s==='admin')   initAdmin();
+  if (s==='student') initStudent();
+}
+
+// ════════════════════════════════
+//  ADMIN
+// ════════════════════════════════
+let currentModuleIdx = null;
+
+function initAdmin() {
+  document.getElementById('admin-badge').textContent = currentUser.email;
+  updateStats();
+  renderAllowedEmails();
+  renderAdminModules();
+  renderUsersTable();
+}
+
+function adminNav(page) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (page==='users') renderUsersTable();
+}
+
+function updateStats() {
+  const users   = DB.get('users').filter(u=>u.role!=='admin');
+  const modules = DB.get('modules');
+  const lessons = modules.reduce((a,m)=>a+(m.lessons||[]).length,0);
+  const allowed = DB.get('allowed');
+  document.getElementById('stat-users').textContent   = users.length;
+  document.getElementById('stat-modules').textContent = modules.length;
+  document.getElementById('stat-lessons').textContent = lessons;
+  document.getElementById('stat-allowed').textContent = allowed.length;
+}
+
+// Emails
+function renderAllowedEmails() {
+  const list = DB.get('allowed');
+  const el = document.getElementById('email-list');
+  el.innerHTML = list.map((e,i)=>`
+    <div class="email-item">
+      <span>${e}</span>
+      <button class="del-btn" onclick="removeEmail(${i})">✕</button>
+    </div>`).join('');
+  updateStats();
+}
+
+function addAllowedEmail() {
+  const inp = document.getElementById('new-email-input');
+  const val = inp.value.trim().toLowerCase();
+  if (!val||!val.includes('@')) return;
+  const list = DB.get('allowed');
+  if (!list.includes(val)) { list.push(val); DB.set('allowed', list); }
+  inp.value = '';
+  renderAllowedEmails();
+}
+
+function removeEmail(i) {
+  const list = DB.get('allowed');
+  list.splice(i,1);
+  DB.set('allowed', list);
+  renderAllowedEmails();
+}
+
+// Modules
+function renderAdminModules() {
+  const mods = DB.get('modules');
+  const grid = document.getElementById('admin-modules-grid');
+  grid.innerHTML = mods.map((m,i)=>`
+    <div class="module-card" onclick="openModuleDetail(${i})">
+      <div class="module-num">Модуль ${i+1}</div>
+      <div class="module-name">${m.name}</div>
+      <div class="module-meta">${(m.lessons||[]).length} уроков</div>
+      <div class="flex mt-16">
+        <button class="btn-sm danger" onclick="event.stopPropagation();deleteModule(${i})">Удалить</button>
+      </div>
+    </div>`).join('');
+  updateStats();
+}
+
+function openAddModule() {
+  document.getElementById('new-module-name').value='';
+  document.getElementById('new-module-desc').value='';
+  openModal('add-module-modal');
+}
+
+function saveModule() {
+  const name = document.getElementById('new-module-name').value.trim();
+  const desc = document.getElementById('new-module-desc').value.trim();
+  if (!name) return;
+  const mods = DB.get('modules');
+  mods.push({ name, desc, lessons:[] });
+  DB.set('modules', mods);
+  closeModal('add-module-modal');
+  renderAdminModules();
+}
+
+function deleteModule(i) {
+  if (!confirm('Удалить модуль?')) return;
+  const mods = DB.get('modules');
+  mods.splice(i,1);
+  DB.set('modules', mods);
+  renderAdminModules();
+}
+
+function openModuleDetail(i) {
+  currentModuleIdx = i;
+  const mod = DB.get('modules')[i];
+  document.getElementById('mdm-title').textContent = `Модуль ${i+1}: ${mod.name}`;
+  renderModuleLessons();
+  openModal('module-detail-modal');
+}
+
+function renderModuleLessons() {
+  const mod = DB.get('modules')[currentModuleIdx];
+  const el = document.getElementById('mdm-lesson-list');
+  if (!(mod.lessons||[]).length) { el.innerHTML = '<div style="color:var(--text2);font-size:13px;">Уроков пока нет</div>'; return; }
+  el.innerHTML = mod.lessons.map((l,i)=>`
+    <div class="lesson-item">
+      <div class="lesson-num">${i+1}</div>
+      <div class="lesson-info">
+        <div class="lesson-title">${l.name}</div>
+        <div class="lesson-icons">
+          ${l.pdf?'📄 PDF ':''}${l.video?'🎬 Видео ':''}${(l.quiz||[]).length?'📝 '+l.quiz.length+' вопр.':''}
+        </div>
+      </div>
+      <div class="lesson-actions">
+        <button class="btn-sm" onclick="openEditLesson(${i})">✏️</button>
+        <button class="btn-sm danger" onclick="deleteLesson(${i})">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openAddLesson() {
+  document.getElementById('new-lesson-name').value='';
+  document.getElementById('new-lesson-pdf').value='';
+  document.getElementById('new-lesson-video').value='';
+  document.getElementById('new-lesson-quiz').value='';
+  openModal('add-lesson-modal');
+}
+
+function saveLesson() {
+  const name  = document.getElementById('new-lesson-name').value.trim();
+  const pdf   = document.getElementById('new-lesson-pdf').value.trim();
+  const video = document.getElementById('new-lesson-video').value.trim();
+  const quizRaw = document.getElementById('new-lesson-quiz').value.trim();
+  let quiz = [];
+  if (quizRaw) { try { quiz = JSON.parse(quizRaw); } catch { alert('Неверный JSON формат теста'); return; } }
+  if (!name) return;
+  const mods = DB.get('modules');
+  mods[currentModuleIdx].lessons.push({ name, pdf, video, quiz });
+  DB.set('modules', mods);
+  renderModuleLessons();
+  renderAdminModules();
+  closeModal('add-lesson-modal');
+}
+
+function openEditLesson(i) {
+  const mod = DB.get('modules')[currentModuleIdx];
+  const l = mod.lessons[i];
+  document.getElementById('edit-lesson-idx').value = i;
+  document.getElementById('edit-lesson-name').value = l.name;
+  document.getElementById('edit-lesson-pdf').value = l.pdf||'';
+  document.getElementById('edit-lesson-video').value = l.video||'';
+  document.getElementById('edit-lesson-quiz').value = l.quiz ? JSON.stringify(l.quiz, null,2) : '';
+  openModal('edit-lesson-modal');
+}
+
+function updateLesson() {
+  const idx   = +document.getElementById('edit-lesson-idx').value;
+  const name  = document.getElementById('edit-lesson-name').value.trim();
+  const pdf   = document.getElementById('edit-lesson-pdf').value.trim();
+  const video = document.getElementById('edit-lesson-video').value.trim();
+  const quizRaw = document.getElementById('edit-lesson-quiz').value.trim();
+  let quiz = [];
+  if (quizRaw) { try { quiz = JSON.parse(quizRaw); } catch { alert('Неверный JSON'); return; } }
+  const mods = DB.get('modules');
+  mods[currentModuleIdx].lessons[idx] = { name, pdf, video, quiz };
+  DB.set('modules', mods);
+  renderModuleLessons();
+  renderAdminModules();
+  closeModal('edit-lesson-modal');
+}
+
+function deleteLesson(i) {
+  if (!confirm('Удалить урок?')) return;
+  const mods = DB.get('modules');
+  mods[currentModuleIdx].lessons.splice(i,1);
+  DB.set('modules', mods);
+  renderModuleLessons();
+  renderAdminModules();
+}
+
+// Users
+function renderUsersTable() {
+  const users = DB.get('users').filter(u=>u.role!=='admin');
+  const prog  = DB.get('progress');
+  const mods  = DB.get('modules');
+  const total = mods.reduce((a,m)=>a+(m.lessons||[]).length,0);
+  const devices = DB.get('devices');
+  const tbody = document.getElementById('users-table-body');
+  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--text2);text-align:center;">Нет студентов</td></tr>'; return; }
+  tbody.innerHTML = users.map(u=>{
+    const done = Object.keys((prog[u.email]||{})).length;
+    const pct  = total ? Math.round(done/total*100) : 0;
+    const dev  = devices[u.email] ? '✓ Зарегистрировано' : '—';
+    return `<tr>
+      <td>${u.name}</td>
+      <td>${u.email}</td>
+      <td style="color:var(--text2);font-size:12px;">${dev}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;">
+            <div style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px;"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text2);width:30px;">${pct}%</span>
+        </div>
+      </td>
+      <td><button class="btn-sm danger" onclick="removeUser('${u.email}')">Удалить</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function removeUser(email) {
+  if (!confirm('Удалить пользователя?')) return;
+  let users = DB.get('users');
+  users = users.filter(u=>u.email!==email);
+  DB.set('users', users);
+  const dev = DB.get('devices');
+  delete dev[email];
+  DB.set('devices', dev);
+  renderUsersTable();
+  updateStats();
+}
+
+// Modals
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); });
+});
+
+// ════════════════════════════════
+//  STUDENT
+// ════════════════════════════════
+let currentLesson = null; // {modIdx, lessonIdx}
+let quizState = {};
+
+function initStudent() {
+  document.getElementById('stu-user-label').textContent = currentUser.name;
+  renderStudentNav();
+  renderWelcome();
+  document.getElementById('student-welcome').style.display = 'block';
+  document.getElementById('lesson-view').style.display = 'none';
+}
+
+function getProgress() {
+  const all = DB.get('progress');
+  return all[currentUser.email] || {};
+}
+
+function setLessonDone(modIdx, lessonIdx) {
+  const all = DB.get('progress');
+  if (!all[currentUser.email]) all[currentUser.email] = {};
+  all[currentUser.email][`${modIdx}_${lessonIdx}`] = true;
+  DB.set('progress', all);
+}
+
+function isLessonDone(modIdx, lessonIdx) {
+  const prog = getProgress();
+  return !!prog[`${modIdx}_${lessonIdx}`];
+}
+
+function isLessonLocked(modIdx, lessonIdx) {
+  if (lessonIdx===0 && modIdx===0) return false;
+  if (lessonIdx===0) { // first lesson of module - check prev module's last lesson
+    const mods = DB.get('modules');
+    const prev = mods[modIdx-1];
+    if (!prev || !prev.lessons.length) return false;
+    return !isLessonDone(modIdx-1, prev.lessons.length-1);
+  }
+  return !isLessonDone(modIdx, lessonIdx-1);
+}
+
+function renderStudentNav() {
+  const mods = DB.get('modules');
+  const nav = document.getElementById('student-module-nav');
+  if (!hasModuleAccess()) { nav.innerHTML = '<div style="padding:16px 24px;font-size:12px;color:var(--text3);">🔒 Доступ закрыт</div>'; return; }
+  nav.innerHTML = mods.map((m,mi)=>`
+    <div class="module-nav-item">
+      <div class="module-nav-title" id="mnav-${mi}" onclick="toggleModuleNav(${mi})">
+        <span>Модуль ${mi+1}: ${m.name}</span><span>›</span>
+      </div>
+      <div class="lesson-nav-list" id="lnav-${mi}">
+        ${(m.lessons||[]).map((l,li)=>{
+          const done   = isLessonDone(mi,li);
+          const locked = isLessonLocked(mi,li);
+          return `<div class="lesson-nav-item ${done?'done':''} ${locked?'locked':''}"
+            onclick="${locked?'':'openLesson('+mi+','+li+')'}">${l.name}</div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function toggleModuleNav(mi) {
+  const list = document.getElementById('lnav-'+mi);
+  const title = document.getElementById('mnav-'+mi);
+  const open = list.classList.toggle('open');
+  title.classList.toggle('expanded', open);
+}
+
+function hasModuleAccess() {
+  const allowed = DB.get('allowed').map(e=>e.toLowerCase());
+  return allowed.includes(currentUser.email.toLowerCase());
+}
+
+function renderWelcome() {
+  const mods = DB.get('modules');
+  const grid = document.getElementById('welcome-modules');
+  const access = hasModuleAccess();
+  if (!access) {
+    grid.innerHTML = `<div style="grid-column:1/-1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:16px;">🔒</div>
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px;">Доступ к модулям закрыт</div>
+      <div style="color:var(--text2);font-size:13px;">Для получения доступа обратитесь к администратору</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = mods.map((m,mi)=>{
+    const total = (m.lessons||[]).length;
+    const done  = (m.lessons||[]).filter((_,li)=>isLessonDone(mi,li)).length;
+    const pct   = total ? Math.round(done/total*100) : 0;
+    return `<div class="prog-card" onclick="openLesson(${mi},0)">
+      <div class="prog-card-title">Модуль ${mi+1}: ${m.name}</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="prog-pct">${done}/${total} уроков</div>
+    </div>`;
+  }).join('');
+}
+
+function openLesson(modIdx, lessonIdx) {
+  if (!hasModuleAccess()) return;
+  if (isLessonLocked(modIdx, lessonIdx)) return;
+  currentLesson = { modIdx, lessonIdx };
+  const mods = DB.get('modules');
+  const mod  = mods[modIdx];
+  const lesson = mod.lessons[lessonIdx];
+
+  document.getElementById('student-welcome').style.display = 'none';
+  document.getElementById('lesson-view').style.display = 'block';
+  document.getElementById('lesson-breadcrumb').textContent = `Модуль ${modIdx+1} › Урок ${lessonIdx+1}`;
+  document.getElementById('lesson-heading').textContent = lesson.name;
+
+  // PDF
+  const pdfArea = document.getElementById('lesson-pdf-area');
+  if (lesson.pdf) {
+    pdfArea.innerHTML = `<iframe class="pdf-embed" src="${lesson.pdf}" allowfullscreen></iframe>`;
+  } else {
+    pdfArea.innerHTML = `<div class="pdf-placeholder"><div class="icon">📄</div><p>PDF материал не добавлен</p></div>`;
+  }
+
+  // Video
+  const vidArea = document.getElementById('lesson-video-area');
+  if (lesson.video) {
+    vidArea.innerHTML = `<iframe class="video-embed" src="${lesson.video}" allowfullscreen></iframe>`;
+  } else {
+    vidArea.innerHTML = `<div class="video-placeholder"><div class="icon">🎬</div><p>Видео не добавлено</p></div>`;
+  }
+
+  // Quiz
+  renderQuiz(lesson.quiz || []);
+
+  // Nav highlight
+  document.querySelectorAll('.lesson-nav-item').forEach(el=>el.classList.remove('active'));
+  const allItems = document.querySelectorAll(`#lnav-${modIdx} .lesson-nav-item`);
+  if (allItems[lessonIdx]) allItems[lessonIdx].classList.add('active');
+  // Open module nav
+  const lnav = document.getElementById('lnav-'+modIdx);
+  const mnav = document.getElementById('mnav-'+modIdx);
+  if (lnav && !lnav.classList.contains('open')) { lnav.classList.add('open'); mnav&&mnav.classList.add('expanded'); }
+
+  document.getElementById('btn-next-lesson').classList.remove('visible');
+}
+
+// ── QUIZ
+function renderQuiz(questions) {
+  const container = document.getElementById('quiz-container');
+  quizState = { questions, current:0, score:0, answered:false };
+  if (!questions.length) {
+    container.innerHTML = '<div style="color:var(--text2);font-size:13px;">Тест не добавлен</div>';
+    markLessonComplete();
+    return;
+  }
+  showQuestion();
+}
+
+function showQuestion() {
+  const {questions, current} = quizState;
+  if (current >= questions.length) { showQuizResult(); return; }
+  const q = questions[current];
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = `
+    <div class="quiz-progress">Вопрос ${current+1} из ${questions.length}</div>
+    <div class="quiz-q-text">${q.q}</div>
+    <div class="quiz-options">
+      ${q.opts.map((o,i)=>`<button class="quiz-option" onclick="answerQuiz(${i})">${o}</button>`).join('')}
+    </div>`;
+}
+
+function answerQuiz(selected) {
+  if (quizState.answered) return;
+  quizState.answered = true;
+  const q = quizState.questions[quizState.current];
+  const opts = document.querySelectorAll('.quiz-option');
+  opts.forEach((b,i)=>{
+    b.classList.add('disabled');
+    if (i===q.ans)    b.classList.add('correct');
+    if (i===selected && selected!==q.ans) b.classList.add('wrong');
+  });
+  if (selected === q.ans) quizState.score++;
+  setTimeout(()=>{ quizState.current++; quizState.answered=false; showQuestion(); }, 900);
+}
+
+function showQuizResult() {
+  const {score, questions} = quizState;
+  const pct = Math.round(score/questions.length*100);
+  document.getElementById('quiz-container').innerHTML = `
+    <div class="quiz-result">
+      <div class="quiz-score">${score}/${questions.length}</div>
+      <p>${pct}% правильных ответов</p>
+      <p style="margin-top:8px;">${pct>=70?'✅ Отлично! Урок пройден.':'📖 Рекомендуем повторить материал.'}</p>
+      ${pct<70?`<button class="btn-secondary" style="margin-top:16px;" onclick="renderQuiz(quizState.questions)">Повторить тест</button>`:''}
+    </div>`;
+  if (pct>=70) markLessonComplete();
+}
+
+function markLessonComplete() {
+  const {modIdx, lessonIdx} = currentLesson;
+  setLessonDone(modIdx, lessonIdx);
+  renderStudentNav();
+  renderWelcome();
+  // Show next button
+  const mods = DB.get('modules');
+  const mod  = mods[modIdx];
+  const hasNext = lessonIdx < mod.lessons.length-1 || modIdx < mods.length-1;
+  if (hasNext) document.getElementById('btn-next-lesson').classList.add('visible');
+}
+
+function goNextLesson() {
+  const {modIdx, lessonIdx} = currentLesson;
+  const mods = DB.get('modules');
+  const mod  = mods[modIdx];
+  if (lessonIdx < mod.lessons.length-1) {
+    openLesson(modIdx, lessonIdx+1);
+  } else if (modIdx < mods.length-1) {
+    openLesson(modIdx+1, 0);
+  }
+}
+
+// ════════════════════════════════
+//  INIT
+// ════════════════════════════════
+initData();
+showScreen('auth');
+</script>
+</body>
+</html>
